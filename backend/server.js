@@ -17,6 +17,8 @@ connectDB();
 
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
+// Import Book Routes
+const bookRoutes = require("./routes/books");
 
 // Register Routes
 app.use("/api/auth", authRoutes);
@@ -28,6 +30,9 @@ app.get("/", (req, res) => {
  // protected routes
 const protectedRoutes = require("./routes/protected");
 app.use("/api", protectedRoutes);
+
+// Register Book Routes
+app.use("/api/books", bookRoutes);
 
 
 // Start server
