@@ -1,5 +1,6 @@
 const express = require("express");
 const Book = require("../models/Books");
+const { protect } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -60,6 +61,49 @@ router.delete("/:id", async (req, res) => {
         res.json({ message: "Book deleted successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Add a review to a book
+// @rout POST /api/books/:id/reviews
+router.post("/:id/reviews", protect, async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+        const book = await Book.findById(req.params.id);
+        
+        if (!book) {
+            return res.status(404).json({ message: "Book not found" });
+        }
+
+        // Create a new review
+        const review = {
+            user: req.user._id, // Get user ID from auth middleware
+            rating,
+            comment
+        };
+
+        book.reviews.push(review);
+        book.averageRating = book.reviews.reduce((sum, r) => sum + r.rating, 0) / book.reviews.length;
+        
+        await book.save();
+        res.status(201).json({ message: "Review added successfully", review });
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+// Get all reviews for a book
+router.get("/:id/reviews", async (req, res) => {
+    try {
+        const book = await Book.findById(req.params.id).populate("reviews.user", "name email");
+        
+        if (!book) {
+            return res.status(404).json({ message: "Book not found" });
+        }
+
+        res.json(book.reviews);
+    } catch (error) {
+        res.status(500).json({ message: "Server error" });
     }
 });
 

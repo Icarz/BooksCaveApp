@@ -1,24 +1,21 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const bookRoutes = require("./routes/books");
 
 // Load environment variables
 dotenv.config();
-
 const app = express();
 
 // Middleware
 app.use(express.json()); // Parse JSON bodies
 app.use(cors());         // Enable CORS
-
+app.use("/api/books", bookRoutes);
 // Connect to DB
 const connectDB = require("./config/db");
 connectDB();
-
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
-// Import Book Routes
-const bookRoutes = require("./routes/books");
 
 // Register Routes
 app.use("/api/auth", authRoutes);

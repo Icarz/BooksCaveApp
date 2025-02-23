@@ -1,9 +1,9 @@
 const express = require("express");
-const auth = require("../middleware/auth");
+const { protect } = require("../middleware/auth");
 
 const router = express.Router();
 
-router.get("/dashboard", auth, (req, res) => {
+router.get("/protected", protect, (req, res) => {
   res.json({ message: "Welcome to your dashboard", userId: req.user.id });
 });
 
