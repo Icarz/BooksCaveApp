@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const bookRoutes = require("./routes/books");
+const favoriteRoutes = require("./routes/favorites");
 
 // Load environment variables
 dotenv.config();
@@ -30,6 +31,9 @@ app.use("/api", protectedRoutes);
 
 // Register Book Routes
 app.use("/api/books", bookRoutes);
+
+// Favorites Books Routes
+app.use("/api/favorites", favoriteRoutes);
 
 
 // Start server

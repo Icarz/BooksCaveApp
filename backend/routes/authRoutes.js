@@ -19,11 +19,24 @@ router.post("/register", async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Create user
+        // ✅ Create user FIRST
         user = new User({ name, email, password: hashedPassword });
         await user.save();
 
-        res.status(201).json({ message: "User registered successfully" });
+        // ✅ Now generate token AFTER user is created
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: "1h",
+        });
+
+        res.status(201).json({
+            message: "User registered successfully",
+            token, // Return token in response
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -43,10 +56,18 @@ router.post("/login", async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-        // Generate JWT token
+        // ✅ Generate JWT token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
-        res.json({ token });
+        res.json({
+            message: "Login successful",
+            token,
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
