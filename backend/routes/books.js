@@ -26,29 +26,51 @@ router.post("/", async (req, res) => {
 });
 
 // @route   GET /api/books
-// @desc    Get all books with pagination & search
+// @desc    Get all books with pagination, search, filtering & sorting
 router.get("/", async (req, res) => {
   try {
-    let { search, page, limit } = req.query;
+    let { search, page, limit, category, sort } = req.query;
 
-    page = parseInt(page) || 1; // Default to page 1
-    limit = parseInt(limit) || 10; // Default to 10 books per page
+    page = parseInt(page) || 1;
+    limit = parseInt(limit) || 10;
     const skip = (page - 1) * limit;
 
     let query = {};
 
     // Case-insensitive search for title, author, or category
     if (search) {
-      query = {
-        $or: [
-          { title: { $regex: search, $options: "i" } },
-          { author: { $regex: search, $options: "i" } },
-          { category: { $regex: search, $options: "i" } },
-        ],
-      };
+      query.$or = [
+        { title: { $regex: search, $options: "i" } },
+        { author: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+      ];
     }
 
-    const books = await Book.find(query).skip(skip).limit(limit);
+    // Filter by category
+    if (category) {
+      query.category = { $regex: category, $options: "i" };
+    }
+
+    // Sorting logic
+    let sortOptions = {};
+    if (sort) {
+      const sortFields = {
+        price: "price",
+        title: "title",
+        year: "publishedYear",
+      };
+      const direction = sort.startsWith("-") ? -1 : 1;
+      const field = sort.replace("-", "");
+      if (sortFields[field]) {
+        sortOptions[sortFields[field]] = direction;
+      }
+    }
+
+    const books = await Book.find(query)
+      .sort(sortOptions)
+      .skip(skip)
+      .limit(limit);
+
     const totalBooks = await Book.countDocuments(query);
 
     res.json({
@@ -61,6 +83,7 @@ router.get("/", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 // @route   GET /api/books/:id
 // @desc    Get a single book by ID
