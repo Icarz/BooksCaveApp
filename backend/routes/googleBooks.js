@@ -50,7 +50,9 @@ router.get("/", async (req, res) => {
 
 // POST /api/google-books/save
 router.post("/save", async (req, res) => {
-  const { volumeId } = req.body;
+  const volumeId = req.body.volumeId || req.body.id;
+
+  console.log("Request body:", req.body);
 
   if (!volumeId) {
     return res
