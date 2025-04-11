@@ -3,6 +3,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const bookRoutes = require("./routes/books");
 const favoriteRoutes = require("./routes/favorites");
+const googleBooksRoutes = require("./routes/googleBooks");
+
 
 // Load environment variables
 dotenv.config();
@@ -12,6 +14,7 @@ const app = express();
 app.use(express.json()); // Parse JSON bodies
 app.use(cors());         // Enable CORS
 app.use("/api/books", bookRoutes);
+app.use("/api/google-books",googleBooksRoutes);
 // Connect to DB
 const connectDB = require("./config/db");
 connectDB();
