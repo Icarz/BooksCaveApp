@@ -1,75 +1,109 @@
 // src/pages/Home.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 const Home = () => {
+  const [books, setBooks] = useState([]);
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+
+  useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        const res = await axios.get("/api/google-books/bestsellers");
+        setBooks(res.data);
+      } catch (error) {
+        console.error("Error fetching books:", error);
+      }
+    };
+
+    fetchBooks();
+  }, []);
+
+  const handleSearch = async () => {
+    try {
+      const res = await axios.get(`/api/google-books/search?q=${search}`);
+      setBooks(res.data);
+    } catch (err) {
+      console.error("Search failed:", err);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="bg-gray-100 shadow-md p-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">📚 Book Cave</h1>
-        <nav className="space-x-4">
-          <a href="/" className="text-gray-700 hover:text-black">Home</a>
-          <a href="/login" className="text-gray-700 hover:text-black">Login</a>
-          <a href="/register" className="text-gray-700 hover:text-black">Register</a>
-        </nav>
-      </header>
-
-      {/* Hero */}
-      <section className="bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 text-white py-20 text-center">
-        <h2 className="text-4xl font-bold mb-4">Discover Your Next Favorite Book</h2>
-        <p className="text-lg">Search, review, and save books you love.</p>
-      </section>
-
-      {/* Search & Filters */}
-      <section className="p-6 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            placeholder="Search by title or author"
-            className="p-2 border border-gray-300 rounded"
-          />
-          <select className="p-2 border border-gray-300 rounded">
-            <option value="">All Categories</option>
-            <option value="Fiction">Fiction</option>
-            <option value="Science">Science</option>
-          </select>
-          <select className="p-2 border border-gray-300 rounded">
-            <option value="">Sort by</option>
-            <option value="price">Price</option>
-            <option value="rating">Rating</option>
-          </select>
-        </div>
-      </section>
-
-      {/* Book List */}
-      <section className="p-6 max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {/* Example Book Card */}
-          <div className="border rounded shadow hover:shadow-lg p-4">
-            <img
-              src="https://via.placeholder.com/150"
-              alt="Book Cover"
-              className="w-full h-48 object-cover mb-4"
-            />
-            <h3 className="font-semibold text-lg">Book Title</h3>
-            <p className="text-sm text-gray-600">Author Name</p>
-            <p className="text-yellow-500 text-sm mt-1">⭐ 4.5</p>
-            <button className="mt-2 text-indigo-600 hover:underline">View Details</button>
+    <>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-24 px-6 md:px-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="text-4xl md:text-6xl font-bold mb-6">
+            Welcome to Book Cave
+          </h1>
+          <p className="text-lg md:text-xl mb-8">
+            Discover, review, and share your favorite books with readers around
+            the world.
+          </p>
+          <div className="flex justify-center gap-4">
+            <a
+              href="/register"
+              className="bg-indigo-600 border border-white px-6 py-3 rounded-md font-semibold hover:bg-indigo-700 transition"
+            >
+              Join Now
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Pagination */}
-      <div className="flex justify-center mt-8 space-x-2">
-        <button className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Previous</button>
-        <button className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Next</button>
-      </div>
+      {/* Search + Category */}
+      <section className="py-10 px-6 md:px-12 bg-gray-50">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
+          <input
+            type="text"
+            placeholder="Search books..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full md:flex-1 px-4 py-2 border rounded shadow-sm"
+          />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full md:w-48 px-4 py-2 border rounded shadow-sm"
+          >
+            <option value="">All Categories</option>
+            <option value="fiction">Fiction</option>
+            <option value="history">History</option>
+            <option value="science">Science</option>
+            {/* Add more categories if needed */}
+          </select>
+          <button
+            onClick={handleSearch}
+            className="w-full md:w-auto bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700 transition"
+          >
+            Search
+          </button>
+        </div>
+      </section>
 
-      {/* Footer */}
-      <footer className="text-center p-4 mt-10 text-gray-500 text-sm">
-        © {new Date().getFullYear()} Book Cave. All rights reserved.
-      </footer>
-    </div>
+      {/* Books Grid */}
+      <section className="py-10 px-6 md:px-12 bg-white">
+        <div className="max-w-7xl mx-auto grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {books.map((book) => (
+            <div
+              key={book.id}
+              className="bg-gray-100 p-4 rounded shadow hover:shadow-md transition"
+            >
+              <img
+                src={book.thumbnail || "https://via.placeholder.com/150"}
+                alt={book.title}
+                className="w-full h-60 object-cover mb-4 rounded"
+              />
+              <h3 className="text-lg font-semibold">{book.title}</h3>
+              <p className="text-sm text-gray-600">
+                {book.authors?.join(", ") || "Unknown author"}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   );
 };
 
