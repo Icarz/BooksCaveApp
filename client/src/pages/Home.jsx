@@ -10,8 +10,8 @@ const Home = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await axios.get("/api/google-books/bestsellers");
-        setBooks(res.data);
+        const res = await axios.get("/api/google-books?q=harry+potter");
+        setBooks(res.data.books);
       } catch (error) {
         console.error("Error fetching books:", error);
       }
@@ -23,7 +23,7 @@ const Home = () => {
   const handleSearch = async () => {
     try {
       const res = await axios.get(`/api/google-books/search?q=${search}`);
-      setBooks(res.data);
+      setBooks(res.data.books);
     } catch (err) {
       console.error("Search failed:", err);
     }
