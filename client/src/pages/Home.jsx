@@ -10,7 +10,7 @@ const Home = () => {
   useEffect(() => {
     const fetchBooks = async () => {
       try {
-        const res = await axios.get("/api/google-books?q=harry+potter");
+        const res = await axios.get("/api/google-books?q=subject:fiction");
         setBooks(res.data.books);
       } catch (error) {
         console.error("Error fetching books:", error);
@@ -22,11 +22,26 @@ const Home = () => {
 
   const handleSearch = async () => {
     try {
-      const res = await axios.get(`/api/google-books/search?q=${search}`);
+      const query = search ? search : "";
+      const categoryQuery = category ? `+subject:${category}` : "";
+      const res = await axios.get(`/api/google-books?q=${query}${categoryQuery}`);
       setBooks(res.data.books);
     } catch (err) {
       console.error("Search failed:", err);
     }
+  };
+
+  // Handle Enter key in search input
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // Handle immediate search on category change
+  const handleCategoryChange = (e) => {
+    setCategory(e.target.value);
+    setTimeout(handleSearch, 0); // Ensure state updates first
   };
 
   return (
@@ -60,18 +75,18 @@ const Home = () => {
             placeholder="Search books..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={handleKeyDown}
             className="w-full md:flex-1 px-4 py-2 border rounded shadow-sm"
           />
           <select
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={handleCategoryChange}
             className="w-full md:w-48 px-4 py-2 border rounded shadow-sm"
           >
             <option value="">All Categories</option>
             <option value="fiction">Fiction</option>
             <option value="history">History</option>
             <option value="science">Science</option>
-            {/* Add more categories if needed */}
           </select>
           <button
             onClick={handleSearch}
