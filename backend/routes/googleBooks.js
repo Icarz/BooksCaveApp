@@ -52,8 +52,6 @@ router.get("/", async (req, res) => {
 router.post("/save", async (req, res) => {
   const volumeId = req.body.volumeId || req.body.id;
 
-  console.log("Request body:", req.body);
-
   if (!volumeId) {
     return res
       .status(400)
@@ -71,8 +69,13 @@ router.post("/save", async (req, res) => {
     const author = volume.authors ? volume.authors[0] : "Unknown";
     const description = volume.description || "No description available";
     const category = volume.categories ? volume.categories[0] : "General";
-    const publishedYear = parseInt(volume.publishedDate?.substring(0, 4)) || 0;
+    const publishedYear = volume.publishedDate
+      ? parseInt(volume.publishedDate.substring(0, 4))
+      : 0;
+    const validPublishedYear = isNaN(publishedYear) ? 0 : publishedYear;
     const price = 0; // Google Books API usually doesn't provide price info
+    const thumbnail = volume.imageLinks?.thumbnail || null;
+    const infoLink = volume.infoLink || null;
 
     // Check if the book already exists in the DB
     const existingBook = await Book.findOne({ title, author });
@@ -89,8 +92,10 @@ router.post("/save", async (req, res) => {
       author,
       description,
       category,
-      publishedYear,
+      publishedYear: validPublishedYear,
       price,
+      thumbnail,
+      infoLink,
     });
 
     await newBook.save();
@@ -100,6 +105,25 @@ router.post("/save", async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to save book from Google Books API" });
+  }
+});
+
+// GET /api/google-books/saved
+router.get("/saved", async (req, res) => {
+  try {
+    const books = await Book.find();
+    res.json({ books });
+  } catch (error) {
+    console.error("Error fetching saved books:", error.message);
+    if (error.cause) {
+      console.error("Cause:", error.cause);
+    } else if (error.errors) {
+      console.error("Errors:", error.errors);
+    } else {
+      console.error("Full error object:", error);
+    }
+
+    res.status(500).json({ message: "Failed to fetch saved books" });
   }
 });
 

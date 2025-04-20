@@ -19,18 +19,18 @@ router.post("/register", async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // ✅ Create user FIRST
+        // ✅ Create user
         user = new User({ name, email, password: hashedPassword });
         await user.save();
 
-        // ✅ Now generate token AFTER user is created
+        // ✅ Generate token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
             expiresIn: "1h",
         });
 
         res.status(201).json({
             message: "User registered successfully",
-            token, // Return token in response
+            token,
             user: {
                 id: user._id,
                 name: user.name,
@@ -56,8 +56,10 @@ router.post("/login", async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-        // ✅ Generate JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        // ✅ Generate token
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: "1h",
+        });
 
         res.json({
             message: "Login successful",
@@ -71,6 +73,12 @@ router.post("/login", async (req, res) => {
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
+});
+
+// @route   POST /api/auth/logout
+// @desc    Logout user (handled client-side)
+router.post("/logout", (req, res) => {
+    res.json({ message: "User logged out successfully" });
 });
 
 module.exports = router;

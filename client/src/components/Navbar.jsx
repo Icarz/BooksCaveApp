@@ -1,4 +1,3 @@
-
 // src/components/Navbar.jsx
 import { Link } from "react-router-dom";
 
@@ -16,11 +15,8 @@ const Navbar = () => {
           <Link to="/" className="text-gray-700 hover:text-purple-600">
             Home
           </Link>
-          <Link to="/login" className="text-gray-700 hover:text-purple-600">
+          <Link to="/Auth" className="text-gray-700 hover:text-purple-600">
             Login
-          </Link>
-          <Link to="/register" className="text-gray-700 hover:text-purple-600">
-            Register
           </Link>
         </div>
       </div>

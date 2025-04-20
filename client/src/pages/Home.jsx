@@ -2,10 +2,21 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
+// Utility to check if user is logged in
+const isAuthenticated = () => {
+  const token = localStorage.getItem("token");
+  return !!token;
+};
+
 const Home = () => {
   const [books, setBooks] = useState([]);
+  const [savedBooks, setSavedBooks] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const loggedIn = isAuthenticated();
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -17,31 +28,67 @@ const Home = () => {
       }
     };
 
+    const fetchSavedBooks = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await axios.get("/api/favorites", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setSavedBooks(res.data.books);
+      } catch (error) {
+        console.error("Error fetching saved books:", error);
+      }
+    };
+
     fetchBooks();
-  }, []);
+    if (loggedIn) fetchSavedBooks();
+  }, [loggedIn]);
 
   const handleSearch = async () => {
     try {
-      const query = search ? search : "";
+      const query = search ? `${search}` : "";
       const categoryQuery = category ? `+subject:${category}` : "";
-      const res = await axios.get(`/api/google-books?q=${query}${categoryQuery}`);
+      if (!query && !categoryQuery) return;
+
+      setLoading(true);
+      const res = await axios.get(
+        `/api/google-books?q=${encodeURIComponent(query + categoryQuery)}`
+      );
       setBooks(res.data.books);
+      setLoading(false);
     } catch (err) {
       console.error("Search failed:", err);
+      setLoading(false);
     }
   };
 
-  // Handle Enter key in search input
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
 
-  // Handle immediate search on category change
-  const handleCategoryChange = (e) => {
-    setCategory(e.target.value);
-    setTimeout(handleSearch, 0); // Ensure state updates first
+  const handleSaveBook = async (bookId) => {
+    try {
+      const res = await axios.post(
+        "/api/google-books/save",
+        { volumeId: bookId },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      setMessage(`✅ ${res.data.message}`);
+    } catch (err) {
+      const msg =
+        err.response?.data?.message || "Failed to save book to database.";
+      setMessage(`⚠️ ${msg}`);
+    }
+
+    setTimeout(() => setMessage(""), 3000);
   };
 
   return (
@@ -58,7 +105,7 @@ const Home = () => {
           </p>
           <div className="flex justify-center gap-4">
             <a
-              href="/register"
+              href="/Auth"
               className="bg-indigo-600 border border-white px-6 py-3 rounded-md font-semibold hover:bg-indigo-700 transition"
             >
               Join Now
@@ -80,7 +127,7 @@ const Home = () => {
           />
           <select
             value={category}
-            onChange={handleCategoryChange}
+            onChange={(e) => setCategory(e.target.value)}
             className="w-full md:w-48 px-4 py-2 border rounded shadow-sm"
           >
             <option value="">All Categories</option>
@@ -95,28 +142,85 @@ const Home = () => {
             Search
           </button>
         </div>
+
+        {message && (
+          <div className="max-w-4xl mx-auto mt-4 text-center text-sm text-green-700 bg-green-100 border border-green-300 px-4 py-2 rounded">
+            {message}
+          </div>
+        )}
       </section>
 
-      {/* Books Grid */}
+      {/* Saved Books Section */}
+      {loggedIn && (
+        <section className="py-10 px-6 md:px-12 bg-white">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-3xl font-bold mb-8 text-center">
+              Your Saved Books
+            </h2>
+            {savedBooks.length === 0 ? (
+              <p className="text-center text-gray-500">
+                You haven't saved any books yet.
+              </p>
+            ) : (
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {savedBooks.map((book, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-100 p-4 rounded shadow hover:shadow-md transition"
+                  >
+                    <img
+                      src={book.thumbnail || "https://via.placeholder.com/150"}
+                      alt={book.title}
+                      className="w-full h-60 object-cover mb-4 rounded"
+                    />
+                    <h3 className="text-lg font-semibold mb-1">{book.title}</h3>
+                    <p className="text-sm text-gray-600 mb-1">
+                      by {book.author || "Unknown"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {book.category || "General"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Google Books Results Section */}
       <section className="py-10 px-6 md:px-12 bg-white">
         <div className="max-w-7xl mx-auto grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {books.map((book) => (
             <div
               key={book.id}
-              className="bg-gray-100 p-4 rounded shadow hover:shadow-md transition"
+              className="bg-gray-100 p-4 rounded shadow hover:shadow-md transition flex flex-col justify-between"
             >
-              <img
-                src={book.thumbnail || "https://via.placeholder.com/150"}
-                alt={book.title}
-                className="w-full h-60 object-cover mb-4 rounded"
-              />
-              <h3 className="text-lg font-semibold">{book.title}</h3>
-              <p className="text-sm text-gray-600">
-                {book.authors?.join(", ") || "Unknown author"}
-              </p>
+              <div>
+                <img
+                  src={book.thumbnail || "https://via.placeholder.com/150"}
+                  alt={book.title}
+                  className="w-full h-60 object-cover mb-4 rounded"
+                />
+                <h3 className="text-lg font-semibold">{book.title}</h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  {book.authors?.join(", ") || "Unknown author"}
+                </p>
+              </div>
+              <button
+                onClick={() => handleSaveBook(book.id)}
+                className="mt-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+              >
+                Save to Library
+              </button>
             </div>
           ))}
         </div>
+        {loading && (
+          <div className="text-center mt-10 text-gray-500">
+            Loading books...
+          </div>
+        )}
       </section>
     </>
   );

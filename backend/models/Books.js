@@ -33,6 +33,8 @@ const bookSchema = new mongoose.Schema(
     publishedYear: { type: Number, required: true },
     reviews: [reviewSchema], // Array of reviews
     averageRating: { type: Number, default: 0 },
+    thumbnail: { type: String },
+    infoLink: { type: String },
   },
   { timestamps: true }
 );
