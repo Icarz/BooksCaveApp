@@ -2,12 +2,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-// Utility to check if user is logged in
-const isAuthenticated = () => {
-  const token = localStorage.getItem("token");
-  return !!token;
-};
-
 const Home = () => {
   const [books, setBooks] = useState([]);
   const [savedBooks, setSavedBooks] = useState([]);
@@ -15,8 +9,13 @@ const Home = () => {
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const loggedIn = isAuthenticated();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token); // Sync login state with token presence
+    console.log("🔁 Checking login state: ", !!token);
+  }, []);
 
   useEffect(() => {
     const fetchBooks = async () => {
@@ -31,20 +30,22 @@ const Home = () => {
     const fetchSavedBooks = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("/api/favorites", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const res = await axios.get("http://localhost:3000/api/favorites", {
+          headers: { Authorization: `Bearer ${token}` },
         });
+        console.log("Fetched saved books:", res.data.books);
         setSavedBooks(res.data.books);
       } catch (error) {
         console.error("Error fetching saved books:", error);
       }
     };
+    
 
     fetchBooks();
-    if (loggedIn) fetchSavedBooks();
-  }, [loggedIn]);
+    if (isLoggedIn) {
+      fetchSavedBooks();
+    }
+  }, [isLoggedIn]);
 
   const handleSearch = async () => {
     try {
@@ -72,14 +73,11 @@ const Home = () => {
 
   const handleSaveBook = async (bookId) => {
     try {
+      const token = localStorage.getItem("token");
       const res = await axios.post(
         "/api/google-books/save",
         { volumeId: bookId },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setMessage(`✅ ${res.data.message}`);
     } catch (err) {
@@ -103,18 +101,20 @@ const Home = () => {
             Discover, review, and share your favorite books with readers around
             the world.
           </p>
-          <div className="flex justify-center gap-4">
-            <a
-              href="/Auth"
-              className="bg-indigo-600 border border-white px-6 py-3 rounded-md font-semibold hover:bg-indigo-700 transition"
-            >
-              Join Now
-            </a>
-          </div>
+          {!isLoggedIn && (
+            <div className="flex justify-center gap-4">
+              <a
+                href="/register"
+                className="bg-indigo-600 border border-white px-6 py-3 rounded-md font-semibold hover:bg-indigo-700 transition"
+              >
+                Join Now
+              </a>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Search + Category */}
+      {/* Search Section */}
       <section className="py-10 px-6 md:px-12 bg-gray-50">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-4">
           <input
@@ -150,45 +150,34 @@ const Home = () => {
         )}
       </section>
 
-      {/* Saved Books Section */}
-      {loggedIn && (
-        <section className="py-10 px-6 md:px-12 bg-white">
+      {/* 🔒 Saved Books Section (Only when logged in) */}
+      {isLoggedIn && savedBooks.length > 0 && (
+        <section className="py-10 px-6 md:px-12 bg-gray-100">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-3xl font-bold mb-8 text-center">
-              Your Saved Books
-            </h2>
-            {savedBooks.length === 0 ? (
-              <p className="text-center text-gray-500">
-                You haven't saved any books yet.
-              </p>
-            ) : (
-              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                {savedBooks.map((book, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-100 p-4 rounded shadow hover:shadow-md transition"
-                  >
-                    <img
-                      src={book.thumbnail || "https://via.placeholder.com/150"}
-                      alt={book.title}
-                      className="w-full h-60 object-cover mb-4 rounded"
-                    />
-                    <h3 className="text-lg font-semibold mb-1">{book.title}</h3>
-                    <p className="text-sm text-gray-600 mb-1">
-                      by {book.author || "Unknown"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {book.category || "General"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
+            <h2 className="text-2xl font-bold mb-6">📚 Your Saved Books</h2>
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+              {savedBooks.map((book) => (
+                <div
+                  key={book.id}
+                  className="bg-white p-4 rounded shadow hover:shadow-md transition"
+                >
+                  <img
+                    src={book.thumbnail || "https://via.placeholder.com/150"}
+                    alt={book.title}
+                    className="w-full h-60 object-cover mb-4 rounded"
+                  />
+                  <h3 className="text-lg font-semibold">{book.title}</h3>
+                  <p className="text-sm text-gray-600 mb-2">
+                    {book.authors?.join(", ") || "Unknown author"}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* Google Books Results Section */}
+      {/* All Books Grid */}
       <section className="py-10 px-6 md:px-12 bg-white">
         <div className="max-w-7xl mx-auto grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
           {books.map((book) => (
@@ -207,19 +196,19 @@ const Home = () => {
                   {book.authors?.join(", ") || "Unknown author"}
                 </p>
               </div>
-              <button
-                onClick={() => handleSaveBook(book.id)}
-                className="mt-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
-              >
-                Save to Library
-              </button>
+              {isLoggedIn && (
+                <button
+                  onClick={() => handleSaveBook(book.id)}
+                  className="mt-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition"
+                >
+                  Save to Library
+                </button>
+              )}
             </div>
           ))}
         </div>
         {loading && (
-          <div className="text-center mt-10 text-gray-500">
-            Loading books...
-          </div>
+          <div className="text-center mt-10 text-gray-500">Loading books...</div>
         )}
       </section>
     </>

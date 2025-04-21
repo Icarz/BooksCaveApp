@@ -5,7 +5,11 @@ import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -32,7 +36,8 @@ const Auth = () => {
       const response = await axios.post(endpoint, payload);
 
       // Save token/user info in localStorage (or context later)
-      localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
 
       navigate("/"); // Redirect to homepage
     } catch (err) {
@@ -101,20 +106,14 @@ const Auth = () => {
           {isLogin ? (
             <>
               Don't have an account?{" "}
-              <button
-                onClick={toggleMode}
-                className="text-blue-600 underline"
-              >
+              <button onClick={toggleMode} className="text-blue-600 underline">
                 Register
               </button>
             </>
           ) : (
             <>
               Already have an account?{" "}
-              <button
-                onClick={toggleMode}
-                className="text-blue-600 underline"
-              >
+              <button onClick={toggleMode} className="text-blue-600 underline">
                 Login
               </button>
             </>
@@ -126,4 +125,3 @@ const Auth = () => {
 };
 
 export default Auth;
-    
