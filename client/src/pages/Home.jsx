@@ -30,15 +30,17 @@ const Home = () => {
     const fetchSavedBooks = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await axios.get("http://localhost:3000/api/favorites", {
+        const res = await axios.get("/api/google-books/saved", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        console.log("Fetched saved books:", res.data.books);
-        setSavedBooks(res.data.books);
+    
+        console.log("Fetched saved books:", res.data);
+        setSavedBooks(res.data.books); // only set the array of books
       } catch (error) {
-        console.error("Error fetching saved books:", error);
+        console.error("Error fetching saved books:", error.response?.data || error.message);
       }
     };
+    
     
 
     fetchBooks();
@@ -74,6 +76,7 @@ const Home = () => {
   const handleSaveBook = async (bookId) => {
     try {
       const token = localStorage.getItem("token");
+      
       const res = await axios.post(
         "/api/google-books/save",
         { volumeId: bookId },
@@ -208,7 +211,9 @@ const Home = () => {
           ))}
         </div>
         {loading && (
-          <div className="text-center mt-10 text-gray-500">Loading books...</div>
+          <div className="text-center mt-10 text-gray-500">
+            Loading books...
+          </div>
         )}
       </section>
     </>

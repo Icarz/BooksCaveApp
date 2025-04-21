@@ -35,6 +35,10 @@ const bookSchema = new mongoose.Schema(
     averageRating: { type: Number, default: 0 },
     thumbnail: { type: String },
     infoLink: { type: String },
+    userId: {
+      type: String,
+      required: true,
+    },
   },
   { timestamps: true }
 );
