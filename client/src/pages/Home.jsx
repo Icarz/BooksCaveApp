@@ -4,7 +4,6 @@ import axios from "axios";
 
 const Home = () => {
   const [books, setBooks] = useState([]);
-  const [savedBooks, setSavedBooks] = useState([]);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [loading, setLoading] = useState(false);
@@ -13,7 +12,7 @@ const Home = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token); // Sync login state with token presence
+    setIsLoggedIn(!!token);
     console.log("🔁 Checking login state: ", !!token);
   }, []);
 
@@ -27,27 +26,8 @@ const Home = () => {
       }
     };
 
-    const fetchSavedBooks = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await axios.get("/api/google-books/saved", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-    
-        console.log("Fetched saved books:", res.data);
-        setSavedBooks(res.data.books); // only set the array of books
-      } catch (error) {
-        console.error("Error fetching saved books:", error.response?.data || error.message);
-      }
-    };
-    
-    
-
     fetchBooks();
-    if (isLoggedIn) {
-      fetchSavedBooks();
-    }
-  }, [isLoggedIn]);
+  }, []);
 
   const handleSearch = async () => {
     try {
@@ -76,7 +56,7 @@ const Home = () => {
   const handleSaveBook = async (bookId) => {
     try {
       const token = localStorage.getItem("token");
-      
+
       const res = await axios.post(
         "/api/google-books/save",
         { volumeId: bookId },
@@ -95,7 +75,7 @@ const Home = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-24 px-6 md:px-12">
+      <section className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white py-24 px-6 pt-20 md:px-12">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-6xl font-bold mb-6">
             Welcome to Book Cave
@@ -107,7 +87,7 @@ const Home = () => {
           {!isLoggedIn && (
             <div className="flex justify-center gap-4">
               <a
-                href="/register"
+                href="/auth"
                 className="bg-indigo-600 border border-white px-6 py-3 rounded-md font-semibold hover:bg-indigo-700 transition"
               >
                 Join Now
@@ -152,33 +132,6 @@ const Home = () => {
           </div>
         )}
       </section>
-
-      {/* 🔒 Saved Books Section (Only when logged in) */}
-      {isLoggedIn && savedBooks.length > 0 && (
-        <section className="py-10 px-6 md:px-12 bg-gray-100">
-          <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl font-bold mb-6">📚 Your Saved Books</h2>
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-              {savedBooks.map((book) => (
-                <div
-                  key={book.id}
-                  className="bg-white p-4 rounded shadow hover:shadow-md transition"
-                >
-                  <img
-                    src={book.thumbnail || "https://via.placeholder.com/150"}
-                    alt={book.title}
-                    className="w-full h-60 object-cover mb-4 rounded"
-                  />
-                  <h3 className="text-lg font-semibold">{book.title}</h3>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {book.authors?.join(", ") || "Unknown author"}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* All Books Grid */}
       <section className="py-10 px-6 md:px-12 bg-white">

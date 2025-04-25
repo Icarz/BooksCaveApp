@@ -17,9 +17,9 @@ const Navbar = () => {
     setIsAuthenticated(false);
     navigate("/Home");
   };
-
+  
   return (
-    <nav className="bg-white shadow-md">
+    <nav className="bg-white shadow-md fixed top-0 left-0 w-full z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="text-xl font-bold text-purple-600">
@@ -31,6 +31,12 @@ const Navbar = () => {
           <Link to="/" className="text-gray-700 hover:text-purple-600">
             Home
           </Link>
+
+          {isAuthenticated && (
+            <Link to="/saved" className="text-gray-700 hover:text-purple-600">
+              Your Saved Books
+            </Link>
+          )}
 
           {!isAuthenticated ? (
             <Link to="/Auth" className="text-gray-700 hover:text-purple-600">
