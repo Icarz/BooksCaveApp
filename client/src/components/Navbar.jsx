@@ -1,32 +1,22 @@
-// src/components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useAuth } from "../AuthContext"; // 👈 import useAuth
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Check if token exists on mount
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsAuthenticated(!!token);
-  }, []);
+  const { isAuthenticated, logout } = useAuth(); // 👈 use context values
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    setIsAuthenticated(false);
+    logout(); // 👈 use the context logout
     navigate("/Home");
   };
-  
+
   return (
     <nav className="bg-white shadow-md fixed top-0 left-0 w-full z-50">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        {/* Logo */}
         <Link to="/" className="text-xl font-bold text-purple-600">
           BookCave
         </Link>
 
-        {/* Nav Links */}
         <div className="space-x-4">
           <Link to="/" className="text-gray-700 hover:text-purple-600">
             Home

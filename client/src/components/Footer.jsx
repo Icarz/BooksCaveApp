@@ -1,5 +1,10 @@
 // src/components/Footer.jsx
 import { Link } from "react-router-dom";
+import { FaInstagram } from "react-icons/fa";
+import { FaFacebook } from "react-icons/fa";
+import { FaTwitter } from "react-icons/fa";
+import { FaLinkedin } from "react-icons/fa6";
+
 
 const Footer = () => {
   return (
@@ -29,9 +34,10 @@ const Footer = () => {
           <h3 className="text-lg font-semibold mb-2 text-purple-300">Connect</h3>
           <p className="text-gray-400">Follow us on social media</p>
           <div className="flex space-x-4 mt-4">
-            <a href="#" className="text-gray-400 hover:text-white">📘</a>
-            <a href="#" className="text-gray-400 hover:text-white">🐦</a>
-            <a href="#" className="text-gray-400 hover:text-white">📸</a>
+            <FaInstagram className=""/>
+            <FaFacebook/>
+            <FaTwitter/>
+            <FaLinkedin/>
           </div>
         </div>
       </div>

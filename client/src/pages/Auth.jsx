@@ -2,6 +2,7 @@
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../AuthContext"; // ✅ import auth context
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +13,7 @@ const Auth = () => {
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ get login function from context
 
   const toggleMode = () => {
     setIsLogin(!isLogin);
@@ -35,11 +37,11 @@ const Auth = () => {
 
       const response = await axios.post(endpoint, payload);
 
-      // Save token/user info in localStorage (or context later)
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      navigate("/"); // Redirect to homepage
+      login(); // ✅ update auth context to trigger UI change
+      navigate("/"); // redirect to homepage
     } catch (err) {
       console.error("Auth error:", err);
       setError(err.response?.data?.message || "Something went wrong");
