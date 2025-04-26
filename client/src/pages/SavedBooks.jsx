@@ -26,8 +26,24 @@ const SavedBooks = () => {
     fetchSavedBooks();
   }, []);
 
+  const handleDelete = async (bookId) => {
+    try {
+      await axios.delete(`/api/google-books/saved/${bookId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setSavedBooks((prevBooks) =>
+        prevBooks.filter((book) => book._id !== bookId)
+      );
+    } catch (err) {
+      console.error("Failed to delete book:", err);
+      alert("Could not delete the book. Please try again.");
+    }
+  };
+
   return (
-    <section className="py-10 px-6  md:px-12 bg-white min-h-screen pt-24">
+    <section className="py-10 px-6 md:px-12 bg-white min-h-screen pt-24">
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl font-bold mb-8 text-center text-purple-700">
           Your Saved Books
@@ -70,9 +86,18 @@ const SavedBooks = () => {
                 <p className="text-sm text-gray-600 mb-1">
                   by {book.author || "Unknown"}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-500 mb-2">
                   {book.category || "General"}
                 </p>
+
+                <div className="mt-4 flex justify-center">
+                  <button
+                    onClick={() => handleDelete(book._id)}
+                    className="text-sm  text-red-600 hover:underline"
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>

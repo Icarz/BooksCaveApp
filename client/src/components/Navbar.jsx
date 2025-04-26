@@ -7,7 +7,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout(); // 👈 use the context logout
-    navigate("/Home");
+    navigate("/");
   };
 
   return (

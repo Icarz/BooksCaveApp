@@ -187,7 +187,7 @@ router.put("/saved/:id", async (req, res) => {
 });
 
 // ❌ DELETE A BOOK
-router.delete("/saved/:id", async (req, res) => {
+router.delete("/saved/:id",protect, async (req, res) => {
   try {
     const deletedBook = await Book.findByIdAndDelete(req.params.id);
     if (!deletedBook) return res.status(404).json({ error: "Book not found" });
@@ -225,7 +225,7 @@ router.post("/saved/:id/reviews", protect, async (req, res) => {
 });
 
 // ⭐ GET REVIEWS FOR A BOOK
-router.get("/saved/:id/reviews", async (req, res) => {
+router.get("/saved/:id/reviews", protect, async (req, res) => {
   try {
     const book = await Book.findById(req.params.id).populate(
       "reviews.user",
