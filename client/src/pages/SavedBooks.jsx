@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
+import ReviewForm from "./ReviewForm";
+import ReviewList from "./ReviewList";
 
 const SavedBooks = () => {
   const [savedBooks, setSavedBooks] = useState([]);
@@ -93,10 +95,16 @@ const SavedBooks = () => {
                 <div className="mt-4 flex justify-center">
                   <button
                     onClick={() => handleDelete(book._id)}
-                    className="text-sm  text-red-600 hover:underline"
+                    className="text-sm text-red-600 hover:underline"
                   >
                     Delete
                   </button>
+                </div>
+
+                {/* ⭐ Review Form & Reviews */}
+                <div className="mt-6 border-t pt-4">
+                  <ReviewForm bookId={book._id} onReviewAdded={() => {}} />
+                  <ReviewList bookId={book._id} />
                 </div>
               </div>
             ))}
