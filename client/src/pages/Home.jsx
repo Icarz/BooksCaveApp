@@ -114,9 +114,26 @@ const Home = () => {
             onChange={(e) => setCategory(e.target.value)}
             className="w-full md:w-48 px-4 py-2 border rounded shadow-sm"
           >
+            <option value="">All Categories</option>
             <option value="fiction">Fiction</option>
-            <option value="history">History</option>
+            <option value="nonfiction">Non-fiction</option>
+            <option value="mystery">Mystery</option>
+            <option value="romance">Romance</option>
+            <option value="fantasy">Fantasy</option>
             <option value="science">Science</option>
+            <option value="history">History</option>
+            <option value="biography">Biography</option>
+            <option value="philosophy">Philosophy</option>
+            <option value="technology">Technology</option>
+            <option value="self-help">Self-Help</option>
+            <option value="health">Health</option>
+            <option value="travel">Travel</option>
+            <option value="poetry">Poetry</option>
+            <option value="religion">Religion</option>
+            <option value="art">Art</option>
+            <option value="business">Business</option>
+            <option value="education">Education</option>
+            <option value="comics">Comics</option>
           </select>
           <button
             onClick={handleSearch}
