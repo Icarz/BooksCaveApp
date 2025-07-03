@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import ReviewForm from "./ReviewForm";
-import ReviewList from "./ReviewList";
+import ReviewForm from "../components/ReviewForm";
+import ReviewList from "../components/ReviewList";
 
 const SavedBooks = () => {
   const [savedBooks, setSavedBooks] = useState([]);
