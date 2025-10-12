@@ -12,17 +12,40 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(express.json()); // Parse JSON bodies
-app.use(cors()); // Enable CORS
+app.use(express.json());
+
+// CORS - Secure configuration
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+}));
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api", require("./routes/protected")); // Protected routes
-app.use("/api/google-books", require("./routes/googleBooks")); // All book functionality here
+app.use("/api", require("./routes/protected")); 
+app.use("/api/google-books", require("./routes/googleBooks"));
 
 // Test route
 app.get("/", (req, res) => {
-  res.send("Book Cave API is running...");
+  res.json({ 
+    message: "Book Cave API is running...",
+    status: "success"
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ 
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'production' ? {} : err.message 
+  });
 });
 
 // Start server
