@@ -35,6 +35,7 @@ const bookSchema = new mongoose.Schema(
     averageRating: { type: Number, default: 0 },
     thumbnail: { type: String },
     infoLink: { type: String },
+    volumeId: { type: String, unique: true, sparse: true },
     userId: {
       type: String,
       required: true,

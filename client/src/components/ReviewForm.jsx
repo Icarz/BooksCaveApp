@@ -1,46 +1,54 @@
 import { useState } from "react";
 import axios from "axios";
-import { Star } from "lucide-react"; // Using lucide-react for stars
+import { Star, Send } from "lucide-react";
 
 const ReviewForm = ({ bookId, onReviewAdded }) => {
   const [rating, setRating] = useState(0);
+  const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState("");
-  const [message, setMessage] = useState("");
-
-  const token = localStorage.getItem("token");
+  const [message, setMessage] = useState({ text: "", type: "" });
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (rating === 0) {
+      setMessage({ text: "Please select a rating", type: "error" });
+      return;
+    }
+    setSubmitting(true);
     try {
       await axios.post(
-        `http://localhost:5000/api/google-books/saved/${bookId}/reviews`,
+        `/api/google-books/saved/${bookId}/reviews`,
         { rating, comment },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
       );
-      setMessage("✅ Review submitted!");
+      setMessage({ text: "Review submitted!", type: "success" });
       setRating(0);
       setComment("");
       onReviewAdded();
     } catch {
-      setMessage("❌ Error submitting review");
+      setMessage({ text: "Failed to submit review", type: "error" });
+    } finally {
+      setSubmitting(false);
+      setTimeout(() => setMessage({ text: "", type: "" }), 3000);
     }
   };
 
-  const handleStarClick = (value) => setRating(value);
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 mt-3">
-      <div className="flex items-center gap-2">
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Leave a Review</p>
+
+      <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((value) => (
           <Star
             key={value}
-            onClick={() => handleStarClick(value)}
-            className={`h-6 w-6 cursor-pointer ${
-              value <= rating ? "fill-yellow-400 stroke-yellow-500" : "stroke-gray-400"
+            onClick={() => setRating(value)}
+            onMouseEnter={() => setHovered(value)}
+            onMouseLeave={() => setHovered(0)}
+            className={`h-5 w-5 cursor-pointer transition-colors ${
+              value <= (hovered || rating)
+                ? "fill-yellow-400 stroke-yellow-400"
+                : "stroke-slate-600 fill-transparent"
             }`}
           />
         ))}
@@ -49,22 +57,24 @@ const ReviewForm = ({ bookId, onReviewAdded }) => {
       <textarea
         value={comment}
         onChange={(e) => setComment(e.target.value)}
-        placeholder="Write your review here..."
-        className="w-full p-2 border border-gray-300 rounded text-sm resize-none"
+        placeholder="Share your thoughts..."
+        className="w-full p-2.5 bg-slate-800 border border-slate-700 text-white text-xs rounded-xl resize-none focus:outline-none focus:border-violet-500 transition placeholder-slate-500"
         rows={3}
         required
       />
 
-      <div className="flex justify-between items-center">
+      <div className="flex items-center gap-3">
         <button
           type="submit"
-          className="bg-purple-600 text-white px-4 py-1 rounded hover:bg-purple-700 text-sm"
+          disabled={submitting}
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-xs rounded-lg transition"
         >
-          Submit Review
+          <Send className="h-3 w-3" />
+          {submitting ? "Submitting..." : "Submit"}
         </button>
-        {message && (
-          <p className="text-xs text-green-600 ml-2">
-            {message}
+        {message.text && (
+          <p className={`text-xs ${message.type === "success" ? "text-emerald-400" : "text-red-400"}`}>
+            {message.text}
           </p>
         )}
       </div>

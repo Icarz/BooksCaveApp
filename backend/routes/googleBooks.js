@@ -163,37 +163,44 @@ router.get("/saved", protect, async (req, res) => {
 });
 
 // 📘 GET A SINGLE BOOK
-router.get("/saved/:id", async (req, res) => {
+router.get("/saved/:id", protect, async (req, res) => {
   try {
     const book = await Book.findById(req.params.id);
     if (!book) return res.status(404).json({ error: "Book not found" });
+    if (book.userId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
     res.json(book);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
 // ✏️ UPDATE A BOOK
-router.put("/saved/:id", async (req, res) => {
+router.put("/saved/:id", protect, async (req, res) => {
   try {
-    const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    if (!updatedBook) return res.status(404).json({ error: "Book not found" });
+    const book = await Book.findById(req.params.id);
+    if (!book) return res.status(404).json({ error: "Book not found" });
+    if (book.userId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
+
+    const allowed = ["title", "author", "description", "category", "publishedYear", "price"];
+    const updates = Object.fromEntries(Object.entries(req.body).filter(([k]) => allowed.includes(k)));
+
+    const updatedBook = await Book.findByIdAndUpdate(req.params.id, updates, { new: true });
     res.json(updatedBook);
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    res.status(400).json({ error: "Server error" });
   }
 });
 
 // ❌ DELETE A BOOK
-router.delete("/saved/:id",protect, async (req, res) => {
+router.delete("/saved/:id", protect, async (req, res) => {
   try {
-    const deletedBook = await Book.findByIdAndDelete(req.params.id);
-    if (!deletedBook) return res.status(404).json({ error: "Book not found" });
+    const book = await Book.findById(req.params.id);
+    if (!book) return res.status(404).json({ error: "Book not found" });
+    if (book.userId !== req.user.id) return res.status(403).json({ error: "Not authorized" });
+    await book.deleteOne();
     res.json({ message: "Book deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: "Server error" });
   }
 });
 

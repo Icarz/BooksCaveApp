@@ -9,48 +9,43 @@ const ReviewList = ({ bookId }) => {
     const fetchReviews = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/google-books/saved/${bookId}/reviews`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
+          `/api/google-books/saved/${bookId}/reviews`,
+          { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
         );
         setReviews(res.data);
       } catch (err) {
         console.error("Error fetching reviews:", err);
       }
     };
-
     fetchReviews();
   }, [bookId]);
 
+  if (reviews.length === 0) {
+    return <p className="text-xs text-slate-500 italic mt-3">No reviews yet — be the first!</p>;
+  }
+
   return (
-    <div className="mt-4 space-y-3">
-      {reviews.length === 0 ? (
-        <p className="text-sm text-gray-500 italic">No reviews yet.</p>
-      ) : (
-        reviews.map((review, index) => (
-          <div key={index} className="bg-white p-3 border rounded shadow-sm">
-            <div className="flex items-center gap-2 mb-1">
+    <div className="mt-4 space-y-2.5">
+      {reviews.map((review, index) => (
+        <div key={index} className="bg-slate-800/60 border border-slate-700/50 rounded-xl p-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 ${
+                  className={`h-3 w-3 ${
                     i < review.rating
-                      ? "fill-yellow-400 stroke-yellow-500"
-                      : "stroke-gray-300"
+                      ? "fill-yellow-400 stroke-yellow-400"
+                      : "stroke-slate-600 fill-transparent"
                   }`}
                 />
               ))}
-              <span className="text-xs text-gray-500 ml-auto">
-                {review.user?.name || "Anonymous"}
-              </span>
             </div>
-            <p className="text-sm text-gray-700">{review.comment}</p>
+            <span className="text-xs text-slate-500">{review.user?.name || "Anonymous"}</span>
           </div>
-        ))
-      )}
+          <p className="text-xs text-slate-300 leading-relaxed">{review.comment}</p>
+        </div>
+      ))}
     </div>
   );
 };
