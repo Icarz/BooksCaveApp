@@ -16,14 +16,7 @@ function App() {
         {/* <Route path="/books/:id" element={<BookDetail />} /> */}
         {/* <Route path="/saved" element={<SavedBooks />} /> */}
         <Route path="/auth" element={<Auth />} />
-        <Route
-          path="/saved"
-          element={
-            <ProtectedRoute>
-              <SavedBooks />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/saved" element={<SavedBooks />} />
       </Routes>
       <Footer />
     </>

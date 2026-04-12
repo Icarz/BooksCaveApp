@@ -2,13 +2,35 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import ReviewForm from "../components/ReviewForm";
 import ReviewList from "../components/ReviewList";
-import { BookOpen, Trash2, Star, MessageSquare } from "lucide-react";
+import { BookOpen, Trash2, Star, MessageSquare, Library } from "lucide-react";
+import { useAuth } from "../AuthContext";
 
 const SavedBooks = () => {
+  const { isAuthenticated } = useAuth();
   const [savedBooks, setSavedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [expandedBook, setExpandedBook] = useState(null);
+
+  if (!isAuthenticated) {
+    return (
+      <section className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+        <div className="text-center">
+          <Library className="h-20 w-20 text-slate-700 mx-auto mb-6" />
+          <h2 className="text-2xl font-bold text-white mb-2">Your Library Awaits</h2>
+          <p className="text-slate-400 mb-8 max-w-sm mx-auto">
+            Log in to access your personal library and see all your saved books.
+          </p>
+          <a
+            href="/auth"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-semibold transition text-sm"
+          >
+            Log in to see your library
+          </a>
+        </div>
+      </section>
+    );
+  }
 
   useEffect(() => {
     const fetchSavedBooks = async () => {
